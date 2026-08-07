@@ -1,5 +1,5 @@
 package com.example.backend.controller;
-
+import com.example.backend.security.JwtService;
 import com.example.backend.dto.LoginRequest;
 import com.example.backend.dto.LoginResponse;
 import com.example.backend.entity.User;
@@ -85,7 +85,7 @@ public class AuthController {
                         .build();
 
         // Tạo JWT
-        String token = jwtService.generateToken(userDetails);
+        String token = jwtService.generateToken(user.getUsername());
 
         // Login thành công
         return ResponseEntity.ok(

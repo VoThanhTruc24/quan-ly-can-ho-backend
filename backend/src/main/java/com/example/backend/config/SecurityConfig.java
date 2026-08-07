@@ -55,6 +55,8 @@ public class SecurityConfig {
 
                         // Login không cần token
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/blocks/**").permitAll()
+                        .requestMatchers("/api/floors/**").permitAll()
 
                         // API admin
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
