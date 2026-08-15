@@ -1,6 +1,7 @@
 package com.example.backend.security;
 
 import com.example.backend.service.CustomUserDetailsService;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -37,29 +38,86 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
 
-        final String authHeader = request.getHeader("Authorization");
+        // ==============================
+        // DEBUG
+        // ==============================
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        System.out.println("====================================");
+        System.out.println("JWT FILTER");
+        System.out.println("METHOD: " + request.getMethod());
+        System.out.println("URL: " + request.getRequestURI());
+
+        final String authHeader =
+                request.getHeader("Authorization");
+
+        System.out.println(
+                "AUTH HEADER: " + authHeader
+        );
+
+        // ==============================
+        // KHÔNG CÓ TOKEN
+        // ==============================
+
+        if (authHeader == null ||
+                !authHeader.startsWith("Bearer ")) {
+
+            System.out.println(
+                    "NO JWT -> CONTINUE"
+            );
+
             filterChain.doFilter(request, response);
             return;
         }
 
-        final String jwt = authHeader.substring(7);
+        // ==============================
+        // LẤY JWT
+        // ==============================
+
+        final String jwt =
+                authHeader.substring(7);
 
         String username;
 
+        // ==============================
+        // GIẢI MÃ JWT
+        // ==============================
+
         try {
-            username = jwtService.extractUsername(jwt);
+
+            username =
+                    jwtService.extractUsername(jwt);
+
+            System.out.println(
+                    "JWT USERNAME: " + username
+            );
+
         } catch (Exception e) {
+
+            System.out.println(
+                    "JWT INVALID: " + e.getMessage()
+            );
+
             filterChain.doFilter(request, response);
             return;
         }
 
+        // ==============================
+        // XÁC THỰC USER
+        // ==============================
+
         if (username != null
-                && SecurityContextHolder.getContext().getAuthentication() == null) {
+                && SecurityContextHolder
+                .getContext()
+                .getAuthentication() == null) {
 
             UserDetails userDetails =
-                    userDetailsService.loadUserByUsername(username);
+                    userDetailsService
+                            .loadUserByUsername(username);
+
+            System.out.println(
+                    "USER AUTHORITIES: "
+                            + userDetails.getAuthorities()
+            );
 
             UsernamePasswordAuthenticationToken authToken =
                     new UsernamePasswordAuthenticationToken(
@@ -73,8 +131,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             .buildDetails(request)
             );
 
-            SecurityContextHolder.getContext().setAuthentication(authToken);
+            SecurityContextHolder
+                    .getContext()
+                    .setAuthentication(authToken);
+
+            System.out.println(
+                    "AUTHENTICATION SET SUCCESS"
+            );
         }
+
+        // ==============================
+        // TIẾP TỤC REQUEST
+        // ==============================
 
         filterChain.doFilter(request, response);
     }

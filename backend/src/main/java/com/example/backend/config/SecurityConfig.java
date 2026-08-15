@@ -2,8 +2,14 @@ package com.example.backend.config;
 
 import com.example.backend.security.JwtAuthenticationFilter;
 
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -25,10 +31,65 @@ public class SecurityConfig {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
 
+    // ==============================
+    // PASSWORD ENCODER
+    // ==============================
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
+
+    // ==============================
+    // CORS CONFIGURATION
+    // ==============================
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        // Frontend React / Vite
+        configuration.setAllowedOrigins(
+                List.of("http://localhost:5173")
+        );
+
+        // Các HTTP method được phép
+        configuration.setAllowedMethods(
+                List.of(
+                        "GET",
+                        "POST",
+                        "PUT",
+                        "DELETE",
+                        "PATCH",
+                        "OPTIONS"
+                )
+        );
+
+        // Cho phép các header
+        configuration.setAllowedHeaders(
+                List.of("*")
+        );
+
+        // Cho phép gửi Authorization / Cookie nếu cần
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
+
+        source.registerCorsConfiguration(
+                "/**",
+                configuration
+        );
+
+        return source;
+    }
+
+
+    // ==============================
+    // SECURITY
+    // ==============================
 
     @Bean
     public SecurityFilterChain securityFilterChain(
@@ -37,36 +98,78 @@ public class SecurityConfig {
 
         http
 
-                // REST API nên tắt CSRF
+                // REST API không dùng CSRF
                 .csrf(csrf -> csrf.disable())
 
-                // Cho phép CORS
+                // Bật CORS
                 .cors(cors -> {})
 
-                // JWT không sử dụng HTTP Session
+                // JWT không sử dụng Session
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(
                                 SessionCreationPolicy.STATELESS
                         )
                 )
 
-                // Phân quyền
+                // ==============================
+                // PHÂN QUYỀN
+                // ==============================
+
                 .authorizeHttpRequests(auth -> auth
 
-                        // Login không cần token
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/blocks/**").permitAll()
-                        .requestMatchers("/api/floors/**").permitAll()
-                        .requestMatchers("/api/apartments/**").permitAll()
+                        // Cho phép OPTIONS - CORS preflight
+                        .requestMatchers(
+                                org.springframework.http.HttpMethod.OPTIONS,
+                                "/**"
+                        ).permitAll()
 
-                        // API admin
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        // Cho phép Spring xử lý error
+                        .requestMatchers("/error").permitAll()
 
-                        // Các API khác phải đăng nhập
+                        // Login không cần JWT
+                        .requestMatchers(
+                                "/api/auth/**"
+                        ).permitAll()
+
+                        // Blocks
+                        .requestMatchers(
+                                "/api/blocks/**"
+                        ).permitAll()
+
+                        // Floors
+                        .requestMatchers(
+                                "/api/floors/**"
+                        ).permitAll()
+
+                        // Apartments
+                        .requestMatchers(
+                                "/api/apartments/**"
+                        ).permitAll()
+
+                        // ==============================
+                        // CUSTOMER
+                        // ==============================
+
+                        .requestMatchers(
+                                "/api/customers/**"
+                        ).permitAll()
+
+                        // ==============================
+                        // API ADMIN
+                        // ==============================
+
+                        .requestMatchers(
+                                "/api/admin/**"
+                        ).hasRole("ADMIN")
+
+                        // Các API còn lại cần đăng nhập
                         .anyRequest().authenticated()
                 )
 
-                // JWT Filter chạy trước filter username/password
+                // ==============================
+                // JWT FILTER
+                // ==============================
+
                 .addFilterBefore(
                         jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class
