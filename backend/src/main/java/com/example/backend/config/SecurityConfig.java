@@ -154,6 +154,12 @@ public class SecurityConfig {
                                 "/api/customers/**"
                         ).permitAll()
 
+                        // CONTRACT
+                        // ==============================
+                        .requestMatchers(
+                                "/api/contracts/**"
+                        ).permitAll()
+
                         // ==============================
                         // API ADMIN
                         // ==============================
