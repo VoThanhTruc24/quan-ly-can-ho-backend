@@ -4,10 +4,12 @@ import com.example.backend.dto.ContractRequest;
 import com.example.backend.entity.Contract;
 import com.example.backend.service.ContractService;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/contracts")
@@ -22,9 +24,9 @@ public class ContractController {
         this.contractService = contractService;
     }
 
-    // =========================
+    // =========================================================
     // GET ALL
-    // =========================
+    // =========================================================
 
     @GetMapping
     public ResponseEntity<List<Contract>> getAllContracts() {
@@ -34,9 +36,9 @@ public class ContractController {
         );
     }
 
-    // =========================
+    // =========================================================
     // GET BY ID
-    // =========================
+    // =========================================================
 
     @GetMapping("/{id}")
     public ResponseEntity<Contract> getContractById(
@@ -48,9 +50,9 @@ public class ContractController {
         );
     }
 
-    // =========================
+    // =========================================================
     // CREATE
-    // =========================
+    // =========================================================
 
     @PostMapping
     public ResponseEntity<Contract> createContract(
@@ -62,9 +64,9 @@ public class ContractController {
         );
     }
 
-    // =========================
+    // =========================================================
     // UPDATE
-    // =========================
+    // =========================================================
 
     @PutMapping("/{id}")
     public ResponseEntity<Contract> updateContract(
@@ -77,17 +79,44 @@ public class ContractController {
         );
     }
 
-    // =========================
+    // =========================================================
     // DELETE
-    // =========================
+    // =========================================================
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteContract(
+    public ResponseEntity<?> deleteContract(
             @PathVariable Long id
     ) {
 
-        contractService.deleteContract(id);
+        try {
 
-        return ResponseEntity.noContent().build();
+            contractService.deleteContract(id);
+
+            return ResponseEntity
+                    .noContent()
+                    .build();
+
+        } catch (IllegalStateException e) {
+
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT)
+                    .body(
+                            Map.of(
+                                    "message",
+                                    e.getMessage()
+                            )
+                    );
+
+        } catch (RuntimeException e) {
+
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(
+                            Map.of(
+                                    "message",
+                                    e.getMessage()
+                            )
+                    );
+        }
     }
 }

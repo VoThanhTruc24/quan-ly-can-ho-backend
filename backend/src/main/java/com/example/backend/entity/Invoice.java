@@ -9,30 +9,66 @@ import java.time.LocalDate;
 @Table(name = "invoice")
 public class Invoice {
 
+    // =========================
+    // ID
+    // =========================
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // =========================
+    // CONTRACT ID
+    // =========================
+
     @Column(name = "contract_id")
     private Long contractId;
+
+    // =========================
+    // MONTH
+    // =========================
 
     @Column(name = "month")
     private Integer month;
 
+    // =========================
+    // YEAR
+    // =========================
+
     @Column(name = "year")
     private Integer year;
+
+    // =========================
+    // AMOUNT
+    // =========================
 
     @Column(name = "amount")
     private BigDecimal amount;
 
+    // =========================
+    // DUE DATE
+    // =========================
+
     @Column(name = "due_date")
     private LocalDate dueDate;
+
+    // =========================
+    // STATUS
+    // =========================
 
     @Column(name = "status")
     private String status;
 
+    // =========================
+    // CONSTRUCTOR
+    // =========================
+
     public Invoice() {
     }
+
+    // =========================
+    // GETTER / SETTER
+    // =========================
 
     public Long getId() {
         return id;
