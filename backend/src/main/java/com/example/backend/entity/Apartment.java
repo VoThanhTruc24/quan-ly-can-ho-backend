@@ -10,15 +10,36 @@ public class Apartment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // =========================
+    // THÔNG TIN CĂN HỘ
+    // =========================
+
     private String name;
+
     private Double area;
+
     private String status;
+
+    // =========================
+    // FLOOR
+    // =========================
 
     @ManyToOne
     @JoinColumn(name = "floor_id")
     private Floor floor;
 
-    // ===== GETTER =====
+    // =========================
+    // OWNER
+    // =========================
+
+    @ManyToOne
+    @JoinColumn(name = "owner_id")
+    private User owner;
+
+    // =========================
+    // GETTER
+    // =========================
+
     public Long getId() {
         return id;
     }
@@ -39,7 +60,14 @@ public class Apartment {
         return floor;
     }
 
-    // ===== SETTER =====
+    public User getOwner() {
+        return owner;
+    }
+
+    // =========================
+    // SETTER
+    // =========================
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -58,5 +86,9 @@ public class Apartment {
 
     public void setFloor(Floor floor) {
         this.floor = floor;
+    }
+
+    public void setOwner(User owner) {
+        this.owner = owner;
     }
 }

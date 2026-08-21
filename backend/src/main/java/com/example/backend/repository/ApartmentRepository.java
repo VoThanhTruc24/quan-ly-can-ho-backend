@@ -6,20 +6,39 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.Optional;
 
-public interface ApartmentRepository extends JpaRepository<Apartment, Long> {
+public interface ApartmentRepository
+        extends JpaRepository<Apartment, Long> {
 
-    // Tìm căn hộ theo tên
+    // =========================
+    // TÌM THEO TÊN
+    // =========================
+
     Optional<Apartment> findByName(String name);
 
-    // Filter theo status
+    // =========================
+    // FILTER STATUS
+    // =========================
+
     List<Apartment> findByStatus(String status);
 
-    // Filter theo floor
+    // =========================
+    // FILTER FLOOR
+    // =========================
+
     List<Apartment> findByFloor_Id(Long floorId);
 
-    // Filter cả status và floor
+    // =========================
+    // FILTER STATUS + FLOOR
+    // =========================
+
     List<Apartment> findByStatusAndFloor_Id(
             String status,
             Long floorId
     );
+
+    // =========================
+    // OWNER
+    // =========================
+
+    List<Apartment> findByOwner_Id(Long ownerId);
 }
