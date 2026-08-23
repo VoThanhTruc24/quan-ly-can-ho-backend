@@ -1,299 +1,130 @@
 package com.example.backend.controller;
 
-import com.example.backend.dto.OwnerRequest;
 import com.example.backend.entity.Apartment;
+import com.example.backend.entity.Contract;
 import com.example.backend.entity.User;
 import com.example.backend.repository.ApartmentRepository;
+import com.example.backend.repository.ContractRepository;
 import com.example.backend.repository.UserRepository;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/admin/owners")
+@RequestMapping("/api/owner")
 @CrossOrigin(origins = "http://localhost:5173")
 public class OwnerController {
 
     private final UserRepository userRepository;
     private final ApartmentRepository apartmentRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final ContractRepository contractRepository;
 
     public OwnerController(
             UserRepository userRepository,
             ApartmentRepository apartmentRepository,
-            PasswordEncoder passwordEncoder
+            ContractRepository contractRepository
     ) {
         this.userRepository = userRepository;
         this.apartmentRepository = apartmentRepository;
-        this.passwordEncoder = passwordEncoder;
+        this.contractRepository = contractRepository;
     }
 
-
     // ==========================================
-    // GET ALL OWNER
-    // ==========================================
-
-    @GetMapping
-    public ResponseEntity<List<User>> getAllOwners() {
-
-        List<User> owners =
-                userRepository.findByRole("OWNER");
-
-        return ResponseEntity.ok(owners);
-    }
-
-
-    // ==========================================
-    // CREATE OWNER
+    // LẤY OWNER ĐANG ĐĂNG NHẬP
     // ==========================================
 
-    @PostMapping
-    public ResponseEntity<?> createOwner(
-            @RequestBody OwnerRequest request
-    ) {
+    private User getCurrentOwner() {
 
-        // -----------------------------
-        // Kiểm tra username
-        // -----------------------------
+        Authentication authentication =
+                SecurityContextHolder
+                        .getContext()
+                        .getAuthentication();
 
-        if (request.getUsername() == null
-                || request.getUsername().trim().isEmpty()) {
+        if (authentication == null
+                || !authentication.isAuthenticated()
+                || authentication.getName() == null
+                || authentication.getName().equals("anonymousUser")) {
 
-            return ResponseEntity
-                    .badRequest()
-                    .body("Username không được để trống");
+            throw new RuntimeException(
+                    "Chưa đăng nhập"
+            );
         }
 
+        String username =
+                authentication.getName();
 
-        // -----------------------------
-        // Kiểm tra password
-        // -----------------------------
-
-        if (request.getPassword() == null
-                || request.getPassword().trim().isEmpty()) {
-
-            return ResponseEntity
-                    .badRequest()
-                    .body("Mật khẩu không được để trống");
-        }
-
-
-        // -----------------------------
-        // Kiểm tra username tồn tại
-        // -----------------------------
-
-        if (userRepository.existsByUsername(
-                request.getUsername()
-        )) {
-
-            return ResponseEntity
-                    .badRequest()
-                    .body("Username đã tồn tại");
-        }
-
-
-        // -----------------------------
-        // Tạo User
-        // -----------------------------
-
-        User user = new User();
-
-        user.setUsername(
-                request.getUsername().trim()
-        );
-
-        user.setPassword(
-                passwordEncoder.encode(
-                        request.getPassword()
-                )
-        );
-
-        user.setFullName(
-                request.getFullName()
-        );
-
-        user.setRole("OWNER");
-
-
-        // -----------------------------
-        // Lưu database
-        // -----------------------------
-
-        User savedUser =
-                userRepository.save(user);
-
-
-        return ResponseEntity.ok(savedUser);
-    }
-
-
-    // ==========================================
-    // GÁN OWNER CHO CĂN HỘ
-    // ==========================================
-
-    @PutMapping("/{ownerId}/apartments/{apartmentId}")
-    public ResponseEntity<?> assignApartment(
-            @PathVariable Long ownerId,
-            @PathVariable Long apartmentId
-    ) {
-
-        // -----------------------------
-        // 1. Tìm Owner
-        // -----------------------------
-
-        User owner = userRepository
-                .findById(ownerId.intValue())
-                .orElse(null);
-
-        if (owner == null) {
-
-            return ResponseEntity
-                    .badRequest()
-                    .body("Không tìm thấy Owner có ID: " + ownerId);
-        }
-
-
-        // -----------------------------
-        // 2. Kiểm tra role
-        // -----------------------------
+        User owner =
+                userRepository
+                        .findByUsername(username)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Không tìm thấy Owner: "
+                                                + username
+                                )
+                        );
 
         if (!"OWNER".equals(owner.getRole())) {
 
-            return ResponseEntity
-                    .badRequest()
-                    .body(
-                            "User có ID "
-                                    + ownerId
-                                    + " không phải OWNER"
-                    );
+            throw new RuntimeException(
+                    "Tài khoản không phải Owner"
+            );
         }
 
-
-        // -----------------------------
-        // 3. Tìm căn hộ
-        // -----------------------------
-
-        Apartment apartment =
-                apartmentRepository
-                        .findById(apartmentId)
-                        .orElse(null);
-
-        if (apartment == null) {
-
-            return ResponseEntity
-                    .badRequest()
-                    .body(
-                            "Không tìm thấy căn hộ có ID: "
-                                    + apartmentId
-                    );
-        }
-
-
-        // -----------------------------
-        // 4. Gán Owner
-        // -----------------------------
-
-        apartment.setOwner(owner);
-
-
-        // -----------------------------
-        // 5. Lưu
-        // -----------------------------
-
-        Apartment savedApartment =
-                apartmentRepository.save(apartment);
-
-
-        return ResponseEntity.ok(savedApartment);
+        return owner;
     }
 
 
     // ==========================================
-    // XEM CĂN HỘ CỦA OWNER
+    // GET /api/owner/me
     // ==========================================
 
-    @GetMapping("/{ownerId}/apartments")
-    public ResponseEntity<?> getOwnerApartments(
-            @PathVariable Long ownerId
-    ) {
+    @GetMapping("/me")
+    public ResponseEntity<User> getMyInfo() {
 
-        // Kiểm tra Owner tồn tại
+        User owner = getCurrentOwner();
 
-        User owner = userRepository
-                .findById(ownerId.intValue())
-                .orElse(null);
-
-        if (owner == null) {
-
-            return ResponseEntity
-                    .badRequest()
-                    .body(
-                            "Không tìm thấy Owner có ID: "
-                                    + ownerId
-                    );
-        }
+        return ResponseEntity.ok(owner);
+    }
 
 
-        // Lấy căn hộ của Owner
+    // ==========================================
+    // GET /api/owner/me/apartments
+    // ==========================================
+
+    @GetMapping("/me/apartments")
+    public ResponseEntity<List<Apartment>> getMyApartments() {
+
+        User owner = getCurrentOwner();
 
         List<Apartment> apartments =
                 apartmentRepository
-                        .findByOwner_Id(ownerId);
+                        .findByOwner_Id(
+                                owner.getId().longValue()
+                        );
 
         return ResponseEntity.ok(apartments);
     }
 
 
     // ==========================================
-    // BỎ GÁN OWNER KHỎI CĂN HỘ
+    // GET /api/owner/me/contracts
     // ==========================================
 
-    @DeleteMapping("/{ownerId}/apartments/{apartmentId}")
-    public ResponseEntity<?> unassignApartment(
-            @PathVariable Long ownerId,
-            @PathVariable Long apartmentId
-    ) {
+    @GetMapping("/me/contracts")
+    public ResponseEntity<List<Contract>> getMyContracts() {
 
-        Apartment apartment =
-                apartmentRepository
-                        .findById(apartmentId)
-                        .orElse(null);
+        User owner = getCurrentOwner();
 
-        if (apartment == null) {
+        List<Contract> contracts =
+                contractRepository
+                        .findByUserId(
+                                owner.getId().longValue()
+                        );
 
-            return ResponseEntity
-                    .badRequest()
-                    .body(
-                            "Không tìm thấy căn hộ có ID: "
-                                    + apartmentId
-                    );
-        }
-
-
-        // Nếu căn hộ đang thuộc Owner này
-
-        if (apartment.getOwner() != null
-                && apartment.getOwner()
-                .getId()
-                .longValue() == ownerId) {
-
-            apartment.setOwner(null);
-
-            apartmentRepository.save(apartment);
-
-            return ResponseEntity.ok(
-                    "Đã bỏ gán Owner khỏi căn hộ"
-            );
-        }
-
-
-        return ResponseEntity
-                .badRequest()
-                .body(
-                        "Căn hộ không thuộc Owner này"
-                );
+        return ResponseEntity.ok(contracts);
     }
 }
