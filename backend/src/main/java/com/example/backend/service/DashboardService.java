@@ -34,9 +34,9 @@ public class DashboardService {
         this.invoiceRepository = invoiceRepository;
     }
 
+
     // =====================================================
-    // DASHBOARD MẶC ĐỊNH
-    // GET /api/dashboard
+    // DASHBOARD - NĂM HIỆN TẠI
     // =====================================================
 
     public DashboardResponse getDashboard() {
@@ -49,30 +49,25 @@ public class DashboardService {
 
 
     // =====================================================
-    // DASHBOARD THEO NĂM
-    //
-    // GET /api/dashboard/stats?year=2026
-    // GET /api/dashboard/stats?year=2025
+    // DASHBOARD - THEO NĂM
     // =====================================================
 
     public DashboardResponse getDashboard(
-            Integer year
+            Integer selectedYear
     ) {
 
         // =================================================
-        // Nếu year null thì lấy năm hiện tại
+        // 1. KIỂM TRA NĂM
         // =================================================
 
-        int selectedYear =
-                year != null
-                        ? year
+        int year =
+                selectedYear != null
+                        ? selectedYear
                         : LocalDate.now().getYear();
 
 
         // =================================================
-        // 1. TỔNG SỐ KHÁCH HÀNG
-        //
-        // Giữ nguyên tổng toàn hệ thống
+        // 2. TỔNG KHÁCH HÀNG
         // =================================================
 
         long totalCustomers =
@@ -80,9 +75,7 @@ public class DashboardService {
 
 
         // =================================================
-        // 2. TỔNG SỐ CĂN HỘ
-        //
-        // Giữ nguyên tổng toàn hệ thống
+        // 3. TỔNG CĂN HỘ
         // =================================================
 
         long totalApartments =
@@ -90,9 +83,7 @@ public class DashboardService {
 
 
         // =================================================
-        // 3. TỔNG SỐ HỢP ĐỒNG
-        //
-        // Giữ nguyên tổng toàn hệ thống
+        // 4. TỔNG HỢP ĐỒNG
         // =================================================
 
         long totalContracts =
@@ -100,26 +91,32 @@ public class DashboardService {
 
 
         // =================================================
-        // 4. LẤY INVOICE THEO NĂM
+        // 5. LẤY HÓA ĐƠN THEO NĂM
         // =================================================
 
-        List<Invoice> selectedYearInvoices =
-                invoiceRepository.findByYear(
-                        selectedYear
-                );
+        List<Invoice> invoices =
+                invoiceRepository.findByYear(year);
 
 
         // =================================================
-        // 5. TỔNG DOANH THU CỦA NĂM ĐANG CHỌN
+        // 6. DOANH THU
+        //
+        // CHỈ TÍNH HÓA ĐƠN ĐÃ THANH TOÁN
         // =================================================
 
         BigDecimal totalRevenue =
                 BigDecimal.ZERO;
 
-        for (Invoice invoice :
-                selectedYearInvoices) {
 
-            if (invoice.getAmount() != null) {
+        for (Invoice invoice : invoices) {
+
+            if (
+                    invoice.getAmount() != null
+                            &&
+                            "PAID".equalsIgnoreCase(
+                                    invoice.getStatus()
+                            )
+            ) {
 
                 totalRevenue =
                         totalRevenue.add(
@@ -130,7 +127,10 @@ public class DashboardService {
 
 
         // =================================================
-        // 6. DOANH THU THEO 12 THÁNG
+        // 7. DOANH THU THEO THÁNG
+        //
+        // ĐỦ 12 THÁNG
+        // CHỈ TÍNH PAID
         // =================================================
 
         List<DashboardResponse.MonthlyRevenue>
@@ -138,54 +138,86 @@ public class DashboardService {
                 new ArrayList<>();
 
 
-        // -----------------------------------------------
-        // Tạo đủ 12 tháng
-        // -----------------------------------------------
+        for (
+                int month = 1;
+                month <= 12;
+                month++
+        ) {
 
-        for (int month = 1;
-             month <= 12;
-             month++) {
-
-            BigDecimal revenue =
+            BigDecimal monthlyTotal =
                     BigDecimal.ZERO;
 
 
-            // -------------------------------------------
-            // Duyệt invoice của năm được chọn
-            // -------------------------------------------
-
-            for (Invoice invoice :
-                    selectedYearInvoices) {
+            for (Invoice invoice : invoices) {
 
                 if (
                         invoice.getMonth() != null
-                                && invoice.getMonth() == month
-                                && invoice.getAmount() != null
+                                &&
+                                invoice.getMonth() == month
+                                &&
+                                invoice.getAmount() != null
+                                &&
+                                "PAID".equalsIgnoreCase(
+                                        invoice.getStatus()
+                                )
                 ) {
 
-                    revenue =
-                            revenue.add(
+                    monthlyTotal =
+                            monthlyTotal.add(
                                     invoice.getAmount()
                             );
                 }
             }
 
 
-            // -------------------------------------------
-            // Thêm tháng vào response
-            // -------------------------------------------
-
             monthlyRevenue.add(
                     new DashboardResponse.MonthlyRevenue(
                             month,
-                            revenue
+                            monthlyTotal
                     )
             );
         }
 
 
         // =================================================
-        // 7. TRẢ KẾT QUẢ
+        // DEBUG
+        // =================================================
+
+        System.out.println(
+                "======================================"
+        );
+
+        System.out.println(
+                "DASHBOARD YEAR: " + year
+        );
+
+        System.out.println(
+                "TOTAL CUSTOMERS: "
+                        + totalCustomers
+        );
+
+        System.out.println(
+                "TOTAL APARTMENTS: "
+                        + totalApartments
+        );
+
+        System.out.println(
+                "TOTAL CONTRACTS: "
+                        + totalContracts
+        );
+
+        System.out.println(
+                "PAID REVENUE: "
+                        + totalRevenue
+        );
+
+        System.out.println(
+                "======================================"
+        );
+
+
+        // =================================================
+        // 8. RETURN
         // =================================================
 
         return new DashboardResponse(

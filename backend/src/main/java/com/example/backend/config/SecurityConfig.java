@@ -25,37 +25,44 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
+
     public SecurityConfig(
             JwtAuthenticationFilter jwtAuthenticationFilter
     ) {
-        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.jwtAuthenticationFilter =
+                jwtAuthenticationFilter;
     }
 
-    // ==============================
+
+    // =====================================================
     // PASSWORD ENCODER
-    // ==============================
+    // =====================================================
 
     @Bean
     public PasswordEncoder passwordEncoder() {
+
         return new BCryptPasswordEncoder();
     }
 
 
-    // ==============================
-    // CORS CONFIGURATION
-    // ==============================
+    // =====================================================
+    // CORS
+    // =====================================================
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
-        CorsConfiguration configuration = new CorsConfiguration();
+        CorsConfiguration configuration =
+                new CorsConfiguration();
 
-        // Frontend React / Vite
+
         configuration.setAllowedOrigins(
-                List.of("http://localhost:5173")
+                List.of(
+                        "http://localhost:5173"
+                )
         );
 
-        // Các HTTP method được phép
+
         configuration.setAllowedMethods(
                 List.of(
                         "GET",
@@ -67,119 +74,201 @@ public class SecurityConfig {
                 )
         );
 
-        // Cho phép các header
+
         configuration.setAllowedHeaders(
                 List.of("*")
         );
 
-        // Cho phép gửi Authorization / Cookie nếu cần
+
         configuration.setAllowCredentials(true);
+
 
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();
+
 
         source.registerCorsConfiguration(
                 "/**",
                 configuration
         );
 
+
         return source;
     }
 
 
-    // ==============================
+    // =====================================================
     // SECURITY
-    // ==============================
+    // =====================================================
 
     @Bean
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http
     ) throws Exception {
 
+
         http
 
-                // REST API không dùng CSRF
-                .csrf(csrf -> csrf.disable())
+                // =================================================
+                // CSRF
+                // =================================================
 
-                // Bật CORS
-                .cors(cors -> {})
-
-                // JWT không sử dụng Session
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(
-                                SessionCreationPolicy.STATELESS
-                        )
+                .csrf(
+                        csrf -> csrf.disable()
                 )
 
-                // ==============================
-                // PHÂN QUYỀN
-                // ==============================
 
-                .authorizeHttpRequests(auth -> auth
+                // =================================================
+                // CORS
+                // =================================================
 
-                        // Cho phép OPTIONS - CORS preflight
-                        .requestMatchers(
-                                org.springframework.http.HttpMethod.OPTIONS,
-                                "/**"
-                        ).permitAll()
-
-                        // Cho phép Spring xử lý error
-                        .requestMatchers("/error").permitAll()
-
-                        // Login không cần JWT
-                        .requestMatchers(
-                                "/api/auth/**"
-                        ).permitAll()
-
-                        // Blocks
-                        .requestMatchers(
-                                "/api/blocks/**"
-                        ).permitAll()
-
-                        // Floors
-                        .requestMatchers(
-                                "/api/floors/**"
-                        ).permitAll()
-
-                        // Apartments
-                        .requestMatchers(
-                                "/api/apartments/**"
-                        ).permitAll()
-
-                        // ==============================
-                        // CUSTOMER
-                        // ==============================
-
-                        .requestMatchers(
-                                "/api/customers/**"
-                        ).permitAll()
-
-                        // CONTRACT
-                        // ==============================
-                        .requestMatchers(
-                                "/api/contracts/**"
-                        ).permitAll()
-
-                        // ==============================
-                        // API ADMIN
-                        // ==============================
-
-                        .requestMatchers(
-                                "/api/admin/**"
-                        ).hasRole("ADMIN")
-
-                        // Các API còn lại cần đăng nhập
-                        .anyRequest().authenticated()
+                .cors(
+                        cors -> {}
                 )
 
-                // ==============================
+
+                // =================================================
+                // SESSION
+                // =================================================
+
+                .sessionManagement(
+                        session ->
+                                session.sessionCreationPolicy(
+                                        SessionCreationPolicy.STATELESS
+                                )
+                )
+
+
+                // =================================================
+                // AUTHORIZATION
+                // =================================================
+
+                .authorizeHttpRequests(
+                        auth -> auth
+
+
+                                // =================================
+                                // OPTIONS
+                                // =================================
+
+                                .requestMatchers(
+                                        org.springframework.http.HttpMethod.OPTIONS,
+                                        "/**"
+                                ).permitAll()
+
+
+                                // =================================
+                                // ERROR
+                                // =================================
+
+                                .requestMatchers(
+                                        "/error"
+                                ).permitAll()
+
+
+                                // =================================
+                                // AUTH
+                                // =================================
+
+                                .requestMatchers(
+                                        "/api/auth/**"
+                                ).permitAll()
+
+
+                                // =================================
+                                // PUBLIC API
+                                // =================================
+
+                                .requestMatchers(
+                                        "/api/blocks/**"
+                                ).permitAll()
+
+
+                                .requestMatchers(
+                                        "/api/floors/**"
+                                ).permitAll()
+
+
+                                .requestMatchers(
+                                        "/api/apartments/**"
+                                ).permitAll()
+
+
+                                .requestMatchers(
+                                        "/api/customers/**"
+                                ).permitAll()
+
+
+                                .requestMatchers(
+                                        "/api/contracts/**"
+                                ).permitAll()
+
+
+                                // =================================
+                                // ADMIN
+                                //
+                                // Chấp nhận:
+                                // ADMIN
+                                // ROLE_ADMIN
+                                // =================================
+
+                                .requestMatchers(
+                                        "/api/admin/**"
+                                )
+                                .hasAnyAuthority(
+                                        "ADMIN",
+                                        "ROLE_ADMIN"
+                                )
+
+
+                                // =================================
+                                // OWNER
+                                //
+                                // Chấp nhận:
+                                // OWNER
+                                // ROLE_OWNER
+                                // =================================
+
+                                .requestMatchers(
+                                        "/api/owner/**"
+                                )
+                                .hasAnyAuthority(
+                                        "OWNER",
+                                        "ROLE_OWNER"
+                                )
+
+
+                                // =================================
+                                // DASHBOARD
+                                // =================================
+
+                                .requestMatchers(
+                                        "/api/dashboard/**"
+                                )
+                                .hasAnyAuthority(
+                                        "ADMIN",
+                                        "ROLE_ADMIN"
+                                )
+
+
+                                // =================================
+                                // CÒN LẠI
+                                // =================================
+
+                                .anyRequest()
+                                .authenticated()
+                )
+
+
+                // =================================================
                 // JWT FILTER
-                // ==============================
+                // =================================================
 
                 .addFilterBefore(
                         jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class
                 );
+
 
         return http.build();
     }
