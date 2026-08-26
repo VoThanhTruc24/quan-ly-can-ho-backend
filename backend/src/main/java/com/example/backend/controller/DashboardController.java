@@ -13,7 +13,9 @@ public class DashboardController {
 
     private final DashboardService dashboardService;
 
-    public DashboardController(DashboardService dashboardService) {
+    public DashboardController(
+            DashboardService dashboardService
+    ) {
         this.dashboardService = dashboardService;
     }
 
@@ -26,12 +28,14 @@ public class DashboardController {
         );
     }
 
-    // GET /api/dashboard/stats
+    // GET /api/dashboard/stats?year=2026
     @GetMapping("/stats")
-    public ResponseEntity<DashboardResponse> getDashboardStats() {
+    public ResponseEntity<DashboardResponse> getDashboardStats(
+            @RequestParam(required = false) Integer year
+    ) {
 
         return ResponseEntity.ok(
-                dashboardService.getDashboard()
+                dashboardService.getDashboard(year)
         );
     }
 }

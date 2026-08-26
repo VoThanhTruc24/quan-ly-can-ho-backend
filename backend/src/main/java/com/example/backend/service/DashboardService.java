@@ -34,42 +34,90 @@ public class DashboardService {
         this.invoiceRepository = invoiceRepository;
     }
 
+    // =====================================================
+    // DASHBOARD MẶC ĐỊNH
+    // GET /api/dashboard
+    // =====================================================
+
     public DashboardResponse getDashboard() {
 
-        // ==========================================
+        int currentYear =
+                LocalDate.now().getYear();
+
+        return getDashboard(currentYear);
+    }
+
+
+    // =====================================================
+    // DASHBOARD THEO NĂM
+    //
+    // GET /api/dashboard/stats?year=2026
+    // GET /api/dashboard/stats?year=2025
+    // =====================================================
+
+    public DashboardResponse getDashboard(
+            Integer year
+    ) {
+
+        // =================================================
+        // Nếu year null thì lấy năm hiện tại
+        // =================================================
+
+        int selectedYear =
+                year != null
+                        ? year
+                        : LocalDate.now().getYear();
+
+
+        // =================================================
         // 1. TỔNG SỐ KHÁCH HÀNG
-        // ==========================================
+        //
+        // Giữ nguyên tổng toàn hệ thống
+        // =================================================
 
         long totalCustomers =
                 customerRepository.count();
 
 
-        // ==========================================
+        // =================================================
         // 2. TỔNG SỐ CĂN HỘ
-        // ==========================================
+        //
+        // Giữ nguyên tổng toàn hệ thống
+        // =================================================
 
         long totalApartments =
                 apartmentRepository.count();
 
 
-        // ==========================================
+        // =================================================
         // 3. TỔNG SỐ HỢP ĐỒNG
-        // ==========================================
+        //
+        // Giữ nguyên tổng toàn hệ thống
+        // =================================================
 
         long totalContracts =
                 contractRepository.count();
 
 
-        // ==========================================
-        // 4. DOANH THU
-        // ==========================================
+        // =================================================
+        // 4. LẤY INVOICE THEO NĂM
+        // =================================================
 
-        List<Invoice> invoices =
-                invoiceRepository.findAll();
+        List<Invoice> selectedYearInvoices =
+                invoiceRepository.findByYear(
+                        selectedYear
+                );
 
-        BigDecimal totalRevenue = BigDecimal.ZERO;
 
-        for (Invoice invoice : invoices) {
+        // =================================================
+        // 5. TỔNG DOANH THU CỦA NĂM ĐANG CHỌN
+        // =================================================
+
+        BigDecimal totalRevenue =
+                BigDecimal.ZERO;
+
+        for (Invoice invoice :
+                selectedYearInvoices) {
 
             if (invoice.getAmount() != null) {
 
@@ -81,27 +129,33 @@ public class DashboardService {
         }
 
 
-        // ==========================================
-        // 5. DOANH THU THEO THÁNG - NĂM HIỆN TẠI
-        // ==========================================
-
-        int currentYear =
-                LocalDate.now().getYear();
-
-        List<Invoice> currentYearInvoices =
-                invoiceRepository.findByYear(currentYear);
+        // =================================================
+        // 6. DOANH THU THEO 12 THÁNG
+        // =================================================
 
         List<DashboardResponse.MonthlyRevenue>
-                monthlyRevenue = new ArrayList<>();
+                monthlyRevenue =
+                new ArrayList<>();
 
 
+        // -----------------------------------------------
         // Tạo đủ 12 tháng
-        for (int month = 1; month <= 12; month++) {
+        // -----------------------------------------------
+
+        for (int month = 1;
+             month <= 12;
+             month++) {
 
             BigDecimal revenue =
                     BigDecimal.ZERO;
 
-            for (Invoice invoice : currentYearInvoices) {
+
+            // -------------------------------------------
+            // Duyệt invoice của năm được chọn
+            // -------------------------------------------
+
+            for (Invoice invoice :
+                    selectedYearInvoices) {
 
                 if (
                         invoice.getMonth() != null
@@ -116,6 +170,11 @@ public class DashboardService {
                 }
             }
 
+
+            // -------------------------------------------
+            // Thêm tháng vào response
+            // -------------------------------------------
+
             monthlyRevenue.add(
                     new DashboardResponse.MonthlyRevenue(
                             month,
@@ -125,9 +184,9 @@ public class DashboardService {
         }
 
 
-        // ==========================================
-        // RETURN
-        // ==========================================
+        // =================================================
+        // 7. TRẢ KẾT QUẢ
+        // =================================================
 
         return new DashboardResponse(
                 totalCustomers,

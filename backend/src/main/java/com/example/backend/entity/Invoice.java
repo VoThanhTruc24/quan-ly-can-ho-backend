@@ -17,12 +17,14 @@ public class Invoice {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+
     // =========================
     // CONTRACT ID
     // =========================
 
     @Column(name = "contract_id")
     private Long contractId;
+
 
     // =========================
     // MONTH
@@ -31,12 +33,14 @@ public class Invoice {
     @Column(name = "month")
     private Integer month;
 
+
     // =========================
     // YEAR
     // =========================
 
     @Column(name = "year")
     private Integer year;
+
 
     // =========================
     // AMOUNT
@@ -45,6 +49,7 @@ public class Invoice {
     @Column(name = "amount")
     private BigDecimal amount;
 
+
     // =========================
     // DUE DATE
     // =========================
@@ -52,12 +57,39 @@ public class Invoice {
     @Column(name = "due_date")
     private LocalDate dueDate;
 
+
     // =========================
     // STATUS
+    //
+    // PAID
+    // UNPAID
+    // OVERDUE
     // =========================
 
     @Column(name = "status")
     private String status;
+
+
+    // =========================
+    // PAID DATE
+    // =========================
+
+    @Column(name = "paid_date")
+    private LocalDate paidDate;
+
+
+    // =========================
+    // PAYMENT METHOD
+    //
+    // BANK_TRANSFER
+    // CASH
+    // MOMO
+    // VNPAY
+    // =========================
+
+    @Column(name = "payment_method")
+    private String paymentMethod;
+
 
     // =========================
     // CONSTRUCTOR
@@ -65,6 +97,7 @@ public class Invoice {
 
     public Invoice() {
     }
+
 
     // =========================
     // GETTER / SETTER
@@ -78,6 +111,7 @@ public class Invoice {
         this.id = id;
     }
 
+
     public Long getContractId() {
         return contractId;
     }
@@ -85,6 +119,7 @@ public class Invoice {
     public void setContractId(Long contractId) {
         this.contractId = contractId;
     }
+
 
     public Integer getMonth() {
         return month;
@@ -94,6 +129,7 @@ public class Invoice {
         this.month = month;
     }
 
+
     public Integer getYear() {
         return year;
     }
@@ -101,6 +137,7 @@ public class Invoice {
     public void setYear(Integer year) {
         this.year = year;
     }
+
 
     public BigDecimal getAmount() {
         return amount;
@@ -110,6 +147,7 @@ public class Invoice {
         this.amount = amount;
     }
 
+
     public LocalDate getDueDate() {
         return dueDate;
     }
@@ -118,11 +156,30 @@ public class Invoice {
         this.dueDate = dueDate;
     }
 
+
     public String getStatus() {
         return status;
     }
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+
+    public LocalDate getPaidDate() {
+        return paidDate;
+    }
+
+    public void setPaidDate(LocalDate paidDate) {
+        this.paidDate = paidDate;
+    }
+
+
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
     }
 }
