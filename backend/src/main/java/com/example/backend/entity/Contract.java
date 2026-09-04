@@ -15,9 +15,20 @@ public class Contract {
     // =========================
     // USER ID
     // =========================
+    // ID của User/Owner đang quản lý/tạo hợp đồng
+    // =========================
 
     @Column(name = "user_id", nullable = false)
     private Long userId;
+
+    // =========================
+    // CUSTOMER ID
+    // =========================
+    // ID khách hàng thuê căn hộ
+    // =========================
+
+    @Column(name = "customer_id")
+    private Long customerId;
 
     // =========================
     // APARTMENT ID
@@ -28,6 +39,8 @@ public class Contract {
 
     // =========================
     // CUSTOMER NAME
+    // =========================
+    // Giữ lại để tương thích frontend hiện tại
     // =========================
 
     @Column(name = "customer_name")
@@ -73,6 +86,7 @@ public class Contract {
 
     public Contract(
             Long userId,
+            Long customerId,
             Long apartmentId,
             String customerName,
             String apartmentName,
@@ -82,6 +96,7 @@ public class Contract {
             String status
     ) {
         this.userId = userId;
+        this.customerId = customerId;
         this.apartmentId = apartmentId;
         this.customerName = customerName;
         this.apartmentName = apartmentName;
@@ -101,6 +116,10 @@ public class Contract {
 
     public Long getUserId() {
         return userId;
+    }
+
+    public Long getCustomerId() {
+        return customerId;
     }
 
     public Long getApartmentId() {
@@ -141,6 +160,10 @@ public class Contract {
 
     public void setUserId(Long userId) {
         this.userId = userId;
+    }
+
+    public void setCustomerId(Long customerId) {
+        this.customerId = customerId;
     }
 
     public void setApartmentId(Long apartmentId) {

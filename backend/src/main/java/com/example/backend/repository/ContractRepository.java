@@ -10,6 +10,21 @@ import java.util.List;
 public interface ContractRepository
         extends JpaRepository<Contract, Long> {
 
-    // Lấy tất cả hợp đồng của một Owner
+    // =========================
+    // LẤY HỢP ĐỒNG THEO OWNER
+    // =========================
+
     List<Contract> findByUserId(Long userId);
+
+    // =========================
+    // LẤY HỢP ĐỒNG THEO CUSTOMER
+    // =========================
+
+    List<Contract> findByCustomerId(Long customerId);
+
+    // =========================
+    // LẤY HỢP ĐỒNG THEO APARTMENT
+    // =========================
+
+    List<Contract> findByApartmentId(Long apartmentId);
 }

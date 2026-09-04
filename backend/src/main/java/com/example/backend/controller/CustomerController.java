@@ -1,5 +1,6 @@
 package com.example.backend.controller;
 
+import com.example.backend.dto.CustomerRentalResponse;
 import com.example.backend.entity.Customer;
 import com.example.backend.service.CustomerService;
 
@@ -15,7 +16,9 @@ public class CustomerController {
 
     private final CustomerService customerService;
 
-    public CustomerController(CustomerService customerService) {
+    public CustomerController(
+            CustomerService customerService
+    ) {
         this.customerService = customerService;
     }
 
@@ -24,10 +27,24 @@ public class CustomerController {
     // =========================
 
     @GetMapping
-    public ResponseEntity<List<Customer>> getAllCustomers() {
+    public ResponseEntity<List<Customer>>
+    getAllCustomers() {
 
         return ResponseEntity.ok(
                 customerService.getAllCustomers()
+        );
+    }
+
+    // =========================
+    // GET ALL + RENTAL INFO
+    // =========================
+
+    @GetMapping("/with-rental-info")
+    public ResponseEntity<List<CustomerRentalResponse>>
+    getCustomersWithRentalInfo() {
+
+        return ResponseEntity.ok(
+                customerService.getCustomersWithRentalInfo()
         );
     }
 
@@ -36,7 +53,8 @@ public class CustomerController {
     // =========================
 
     @GetMapping("/{id}")
-    public ResponseEntity<Customer> getCustomerById(
+    public ResponseEntity<Customer>
+    getCustomerById(
             @PathVariable Long id
     ) {
 
@@ -50,7 +68,8 @@ public class CustomerController {
     // =========================
 
     @PostMapping
-    public ResponseEntity<Customer> createCustomer(
+    public ResponseEntity<Customer>
+    createCustomer(
             @RequestBody Customer customer
     ) {
 
@@ -64,13 +83,17 @@ public class CustomerController {
     // =========================
 
     @PutMapping("/{id}")
-    public ResponseEntity<Customer> updateCustomer(
+    public ResponseEntity<Customer>
+    updateCustomer(
             @PathVariable Long id,
             @RequestBody Customer customer
     ) {
 
         return ResponseEntity.ok(
-                customerService.updateCustomer(id, customer)
+                customerService.updateCustomer(
+                        id,
+                        customer
+                )
         );
     }
 
@@ -79,7 +102,8 @@ public class CustomerController {
     // =========================
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCustomer(
+    public ResponseEntity<Void>
+    deleteCustomer(
             @PathVariable Long id
     ) {
 
