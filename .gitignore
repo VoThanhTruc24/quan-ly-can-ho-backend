@@ -2,3 +2,4 @@
 backend/target/
 backend.zip
 *.iml
+.env
