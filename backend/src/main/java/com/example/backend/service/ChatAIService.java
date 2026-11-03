@@ -48,8 +48,7 @@ public class ChatAIService {
 
     private final Client geminiClient;
 
-    private static final String GEMINI_MODEL =
-            "gemini-3.7-flash";
+    private static final String GEMINI_MODEL = "gemini-3.5-flash-lite";
 
     // ============================================================
     // CONSTRUCTOR
@@ -81,6 +80,23 @@ public class ChatAIService {
          * Nếu API key chưa được nhận diện thì Spring Boot
          * vẫn có thể khởi động.
          */
+
+        System.out.println(
+                "============================================================"
+        );
+
+        System.out.println(
+                "GEMINI_API_KEY configured: "
+                        + (apiKey != null && !apiKey.trim().isEmpty())
+        );
+
+        System.out.println(
+                "Gemini model: " + GEMINI_MODEL
+        );
+
+        System.out.println(
+                "============================================================"
+        );
 
         if (apiKey != null &&
                 !apiKey.trim().isEmpty()) {
@@ -124,8 +140,8 @@ public class ChatAIService {
         if (geminiClient == null) {
 
             throw new RuntimeException(
-                    "Chưa cấu hình GEMINI_API_KEY. " +
-                            "Hãy cấu hình API key rồi khởi động lại backend."
+                    "Chưa cấu hình GEMINI_API_KEY. "
+                            + "Hãy cấu hình API key rồi khởi động lại backend."
             );
         }
 
@@ -169,6 +185,26 @@ public class ChatAIService {
 
         try {
 
+            System.out.println(
+                    "============================================================"
+            );
+
+            System.out.println(
+                    "Đang gửi request tới Gemini..."
+            );
+
+            System.out.println(
+                    "Model: " + GEMINI_MODEL
+            );
+
+            System.out.println(
+                    "Question: " + userQuestion.trim()
+            );
+
+            System.out.println(
+                    "============================================================"
+            );
+
             GenerateContentResponse response =
                     geminiClient.models.generateContent(
                             GEMINI_MODEL,
@@ -185,15 +221,32 @@ public class ChatAIService {
                 return "Xin lỗi, hiện tại tôi chưa thể tạo câu trả lời.";
             }
 
+            System.out.println(
+                    "Gemini trả lời thành công."
+            );
+
             return cleanAIReply(reply);
 
         } catch (Exception e) {
 
+            // ====================================================
+            // QUAN TRỌNG:
+            // Không che mất lỗi thật của Gemini.
+            // ====================================================
+
             e.printStackTrace();
 
+            String detail = e.getMessage();
+
+            if (detail == null ||
+                    detail.trim().isEmpty()) {
+
+                detail = e.getClass().getSimpleName();
+            }
+
             throw new RuntimeException(
-                    "Không thể kết nối với Gemini AI. " +
-                            "Vui lòng thử lại sau."
+                    "Gemini API lỗi: " + detail,
+                    e
             );
         }
     }
@@ -1081,7 +1134,7 @@ public class ChatAIService {
 
                 Ví dụ:
 
-                "Được nhé 😊 Hiện hệ thống của bạn có căn A102 đang
+                "Được nhé. Hiện hệ thống của bạn có căn A102 đang
                 trống, diện tích 55 m², tầng 1."
 
                 Sau đó có thể nói:
@@ -1238,7 +1291,7 @@ public class ChatAIService {
 
                 Ví dụ:
 
-                "Không có gì nhé 😊 Nếu cần tra cứu căn hộ, hợp đồng
+                "Không có gì nhé. Nếu cần tra cứu căn hộ, hợp đồng
                 hoặc hóa đơn thì cứ hỏi tôi."
 
                 ====================================================
@@ -1624,6 +1677,7 @@ public class ChatAIService {
         public void setApartments(
                 List<Apartment> apartments
         ) {
+
             this.apartments =
                     apartments;
         }
@@ -1639,6 +1693,7 @@ public class ChatAIService {
         public void setRentalInfos(
                 List<OwnerRentalInfo> rentalInfos
         ) {
+
             this.rentalInfos =
                     rentalInfos;
         }
@@ -1654,6 +1709,7 @@ public class ChatAIService {
         public void setTotalApartments(
                 int totalApartments
         ) {
+
             this.totalApartments =
                     totalApartments;
         }
@@ -1669,6 +1725,7 @@ public class ChatAIService {
         public void setRentedApartments(
                 int rentedApartments
         ) {
+
             this.rentedApartments =
                     rentedApartments;
         }
@@ -1684,6 +1741,7 @@ public class ChatAIService {
         public void setAvailableApartments(
                 int availableApartments
         ) {
+
             this.availableApartments =
                     availableApartments;
         }
@@ -1699,6 +1757,7 @@ public class ChatAIService {
         public void setOtherApartments(
                 int otherApartments
         ) {
+
             this.otherApartments =
                     otherApartments;
         }
@@ -1730,6 +1789,7 @@ public class ChatAIService {
         public void setApartment(
                 Apartment apartment
         ) {
+
             this.apartment =
                     apartment;
         }
@@ -1745,6 +1805,7 @@ public class ChatAIService {
         public void setCustomer(
                 Customer customer
         ) {
+
             this.customer =
                     customer;
         }
@@ -1760,6 +1821,7 @@ public class ChatAIService {
         public void setContract(
                 Contract contract
         ) {
+
             this.contract =
                     contract;
         }
@@ -1775,6 +1837,7 @@ public class ChatAIService {
         public void setInvoices(
                 List<Invoice> invoices
         ) {
+
             this.invoices =
                     invoices;
         }
