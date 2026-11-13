@@ -7,11 +7,13 @@ import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
+import org.springframework.beans.factory.annotation.Value;
 
 @Service
 public class JwtService {
 
-    private final String SECRET_KEY = "12345678901234567890123456789012"; // >= 32 ký tự
+    @Value("${jwt.secret}")
+    private String SECRET_KEY;
 
     private SecretKey getSignKey() {
         return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());

@@ -6,7 +6,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
-	<!-- ==================== SPRING BOOT ==================== -->
+	<!-- SPRING BOOT -->
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
@@ -14,7 +14,7 @@
 		<relativePath/>
 	</parent>
 
-	<!-- ==================== PROJECT INFO ==================== -->
+	<!-- PROJECT INFO -->
 	<groupId>com.example</groupId>
 	<artifactId>backend</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
@@ -22,47 +22,47 @@
 	<name>backend</name>
 	<description>Apartment Management Backend</description>
 
-	<!-- ==================== JAVA ==================== -->
+	<!-- JAVA -->
 	<properties>
 		<java.version>21</java.version>
 	</properties>
 
-	<!-- ==================== DEPENDENCIES ==================== -->
+	<!-- DEPENDENCIES -->
 	<dependencies>
 
-		<!-- ==================== SPRING DATA JPA ==================== -->
+		<!-- SPRING DATA JPA -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
 
-		<!-- ==================== SPRING SECURITY ==================== -->
+		<!-- SPRING SECURITY -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
 
-		<!-- ==================== SPRING WEB ==================== -->
+		<!-- SPRING WEB -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-webmvc</artifactId>
 		</dependency>
 
-		<!-- ==================== MYSQL ==================== -->
+		<!-- MYSQL -->
 		<dependency>
 			<groupId>com.mysql</groupId>
 			<artifactId>mysql-connector-j</artifactId>
 			<scope>runtime</scope>
 		</dependency>
 
-		<!-- ==================== LOMBOK ==================== -->
+		<!-- LOMBOK -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<optional>true</optional>
 		</dependency>
 
-		<!-- ==================== JWT ==================== -->
+		<!-- JWT -->
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-api</artifactId>
@@ -83,26 +83,21 @@
 			<scope>runtime</scope>
 		</dependency>
 
-		<!-- ==================== GOOGLE GEMINI AI ==================== -->
+		<!-- GOOGLE GEMINI AI -->
 		<dependency>
 			<groupId>com.google.genai</groupId>
 			<artifactId>google-genai</artifactId>
 			<version>1.67.0</version>
 		</dependency>
 
-		<!-- ==================== OPENAI ==================== -->
-		<!--
-            TẠM GIỮ LẠI.
-            Sau khi Gemini chạy thành công, chúng ta sẽ xóa dependency này.
-        -->
+		<!-- OPENAI -->
 		<dependency>
 			<groupId>com.openai</groupId>
 			<artifactId>openai-java</artifactId>
 			<version>4.52.0</version>
 		</dependency>
 
-		<!-- ==================== TEST ==================== -->
-
+		<!-- TEST -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa-test</artifactId>
@@ -123,41 +118,39 @@
 
 	</dependencies>
 
-	<!-- ==================== BUILD ==================== -->
+	<!-- BUILD -->
 	<build>
-
 		<plugins>
 
-			<!-- ==================== SPRING BOOT ==================== -->
+			<!-- SPRING BOOT MAVEN PLUGIN -->
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<mainClass>com.example.backend.BackendApplication</mainClass>
+				</configuration>
 			</plugin>
 
-			<!-- ==================== MAVEN COMPILER ==================== -->
+			<!-- MAVEN COMPILER -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-
 				<executions>
 
 					<!-- COMPILE -->
 					<execution>
 						<id>default-compile</id>
 						<phase>compile</phase>
-
 						<goals>
 							<goal>compile</goal>
 						</goals>
-
 						<configuration>
 							<annotationProcessorPaths>
-
 								<path>
 									<groupId>org.projectlombok</groupId>
 									<artifactId>lombok</artifactId>
+									<version>${lombok.version}</version>
 								</path>
-
 							</annotationProcessorPaths>
 						</configuration>
 					</execution>
@@ -166,29 +159,24 @@
 					<execution>
 						<id>default-testCompile</id>
 						<phase>test-compile</phase>
-
 						<goals>
 							<goal>testCompile</goal>
 						</goals>
-
 						<configuration>
 							<annotationProcessorPaths>
-
 								<path>
 									<groupId>org.projectlombok</groupId>
 									<artifactId>lombok</artifactId>
+									<version>${lombok.version}</version>
 								</path>
-
 							</annotationProcessorPaths>
 						</configuration>
 					</execution>
 
 				</executions>
-
 			</plugin>
 
 		</plugins>
-
 	</build>
 
 </project>
