@@ -1,3 +1,4 @@
+
 package com.example.backend.security;
 
 import com.example.backend.service.CustomUserDetailsService;
@@ -10,10 +11,13 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+
+import io.jsonwebtoken.JwtException;
 
 import java.io.IOException;
 
@@ -38,112 +42,72 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
 
-        // ==============================
-        // DEBUG
-        // ==============================
+        final String authHeader = request.getHeader("Authorization");
 
-        System.out.println("====================================");
-        System.out.println("JWT FILTER");
-        System.out.println("METHOD: " + request.getMethod());
-        System.out.println("URL: " + request.getRequestURI());
-
-        final String authHeader =
-                request.getHeader("Authorization");
-
-        System.out.println(
-                "AUTH HEADER: " + authHeader
-        );
-
-        // ==============================
-        // KHÔNG CÓ TOKEN
-        // ==============================
-
-        if (authHeader == null ||
-                !authHeader.startsWith("Bearer ")) {
-
-            System.out.println(
-                    "NO JWT -> CONTINUE"
-            );
-
+        // Không có Authorization header: tiếp tục để Spring Security
+        // quyết định request có được phép truy cập hay không.
+        if (authHeader == null || authHeader.isBlank()) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // ==============================
-        // LẤY JWT
-        // ==============================
+        // Chỉ chấp nhận Bearer token.
+        if (!authHeader.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
-        final String jwt =
-                authHeader.substring(7);
+        // Lấy token và loại bỏ khoảng trắng ở hai đầu.
+        final String jwt = authHeader.substring(7).trim();
 
-        String username;
-
-        // ==============================
-        // GIẢI MÃ JWT
-        // ==============================
+        // Token rỗng hoặc chứa khoảng trắng bên trong là không hợp lệ.
+        if (jwt.isEmpty() || jwt.chars().anyMatch(Character::isWhitespace)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         try {
+            // Lấy username từ JWT.
+            final String username = jwtService.extractUsername(jwt);
 
-            username =
-                    jwtService.extractUsername(jwt);
+            // Chỉ xác thực khi SecurityContext chưa có Authentication.
+            if (username != null &&
+                    SecurityContextHolder.getContext().getAuthentication() == null) {
 
-            System.out.println(
-                    "JWT USERNAME: " + username
-            );
+                UserDetails userDetails =
+                        userDetailsService.loadUserByUsername(username);
 
-        } catch (Exception e) {
+                // Kiểm tra token còn hợp lệ với tài khoản hiện tại.
+                if (jwtService.isTokenValid(jwt, userDetails)) {
 
-            System.out.println(
-                    "JWT INVALID: " + e.getMessage()
-            );
+                    UsernamePasswordAuthenticationToken authToken =
+                            new UsernamePasswordAuthenticationToken(
+                                    userDetails,
+                                    null,
+                                    userDetails.getAuthorities()
+                            );
 
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        // ==============================
-        // XÁC THỰC USER
-        // ==============================
-
-        if (username != null
-                && SecurityContextHolder
-                .getContext()
-                .getAuthentication() == null) {
-
-            UserDetails userDetails =
-                    userDetailsService
-                            .loadUserByUsername(username);
-
-            System.out.println(
-                    "USER AUTHORITIES: "
-                            + userDetails.getAuthorities()
-            );
-
-            UsernamePasswordAuthenticationToken authToken =
-                    new UsernamePasswordAuthenticationToken(
-                            userDetails,
-                            null,
-                            userDetails.getAuthorities()
+                    authToken.setDetails(
+                            new WebAuthenticationDetailsSource()
+                                    .buildDetails(request)
                     );
 
-            authToken.setDetails(
-                    new WebAuthenticationDetailsSource()
-                            .buildDetails(request)
-            );
+                    SecurityContextHolder.getContext()
+                            .setAuthentication(authToken);
+                }
+            }
 
-            SecurityContextHolder
-                    .getContext()
-                    .setAuthentication(authToken);
+        } catch (JwtException | IllegalArgumentException |
+                 UsernameNotFoundException e) {
 
-            System.out.println(
-                    "AUTHENTICATION SET SUCCESS"
-            );
+            // JWT không hợp lệ hoặc tài khoản không tồn tại.
+            // Không ghi token hay thông tin nhạy cảm vào log.
+            SecurityContextHolder.clearContext();
         }
 
-        // ==============================
-        // TIẾP TỤC REQUEST
-        // ==============================
-
+        // Tiếp tục filter chain.
+        // Endpoint cần đăng nhập sẽ được Spring Security chặn
+        // nếu không có Authentication hợp lệ.
         filterChain.doFilter(request, response);
     }
 }

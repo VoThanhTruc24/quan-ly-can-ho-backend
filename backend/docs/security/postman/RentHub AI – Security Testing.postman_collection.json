@@ -304,7 +304,7 @@
           "bearer": [
             {
               "key": "token",
-              "value": "\t{{owner_a_token}}",
+              "value": "{{owner_a_token}}",
               "type": "string"
             }
           ]
@@ -333,7 +333,7 @@
           "bearer": [
             {
               "key": "token",
-              "value": "{{owner_b_token}}",
+              "value": "{{owner_a_token}}",
               "type": "string"
             }
           ]
@@ -355,12 +355,31 @@
       "response": []
     },
     {
-      "name": "New Request",
+      "name": "TC10 – Kiểm tra truy cập hóa đơn trái quyền",
       "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{owner_b_token}}",
+              "type": "string"
+            }
+          ]
+        },
         "method": "GET",
         "header": [],
         "url": {
-          "raw": ""
+          "raw": "{{base_url}}/api/owner/me/invoices",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "owner",
+            "me",
+            "invoices"
+          ]
         }
       },
       "response": []
