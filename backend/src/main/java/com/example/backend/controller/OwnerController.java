@@ -113,12 +113,21 @@ public class OwnerController {
     // =====================================================
 
     @GetMapping("/me")
-    public ResponseEntity<User> getMyInfo() {
+    public ResponseEntity<OwnerProfileResponse> getMyInfo() {
 
         User owner =
                 getCurrentOwner();
 
-        return ResponseEntity.ok(owner);
+        // Chỉ trả về các trường cần thiết, không serialize trực tiếp User
+        // để tránh làm lộ password hash trong response.
+        OwnerProfileResponse response = new OwnerProfileResponse(
+                owner.getId(),
+                owner.getUsername(),
+                owner.getFullName(),
+                owner.getRole()
+        );
+
+        return ResponseEntity.ok(response);
     }
 
 
@@ -517,6 +526,48 @@ public class OwnerController {
                                             : "Có lỗi xảy ra khi thanh toán"
                             )
                     );
+        }
+    }
+
+
+    // =====================================================
+    // OWNER PROFILE RESPONSE
+    // Không bao gồm password/password hash.
+    // =====================================================
+
+    public static class OwnerProfileResponse {
+
+        private final Integer id;
+        private final String username;
+        private final String fullName;
+        private final String role;
+
+        public OwnerProfileResponse(
+                Integer id,
+                String username,
+                String fullName,
+                String role
+        ) {
+            this.id = id;
+            this.username = username;
+            this.fullName = fullName;
+            this.role = role;
+        }
+
+        public Integer getId() {
+            return id;
+        }
+
+        public String getUsername() {
+            return username;
+        }
+
+        public String getFullName() {
+            return fullName;
+        }
+
+        public String getRole() {
+            return role;
         }
     }
 
