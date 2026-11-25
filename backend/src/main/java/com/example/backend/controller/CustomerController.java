@@ -16,99 +16,74 @@ public class CustomerController {
 
     private final CustomerService customerService;
 
-    public CustomerController(
-            CustomerService customerService
-    ) {
+    public CustomerController(CustomerService customerService) {
         this.customerService = customerService;
     }
 
-    // =========================
     // GET ALL
-    // =========================
-
     @GetMapping
-    public ResponseEntity<List<Customer>>
-    getAllCustomers() {
-
-        return ResponseEntity.ok(
-                customerService.getAllCustomers()
-        );
+    public ResponseEntity<List<Customer>> getAllCustomers() {
+        return ResponseEntity.ok(customerService.getAllCustomers());
     }
 
-    // =========================
     // GET ALL + RENTAL INFO
-    // =========================
-
     @GetMapping("/with-rental-info")
-    public ResponseEntity<List<CustomerRentalResponse>>
-    getCustomersWithRentalInfo() {
-
-        return ResponseEntity.ok(
-                customerService.getCustomersWithRentalInfo()
-        );
+    public ResponseEntity<List<CustomerRentalResponse>> getCustomersWithRentalInfo() {
+        return ResponseEntity.ok(customerService.getCustomersWithRentalInfo());
     }
 
-    // =========================
     // GET BY ID
-    // =========================
-
     @GetMapping("/{id}")
-    public ResponseEntity<Customer>
-    getCustomerById(
-            @PathVariable Long id
-    ) {
-
-        return ResponseEntity.ok(
-                customerService.getCustomerById(id)
-        );
+    public ResponseEntity<Customer> getCustomerById(@PathVariable Long id) {
+        return ResponseEntity.ok(customerService.getCustomerById(id));
     }
 
-    // =========================
     // CREATE
-    // =========================
-
     @PostMapping
-    public ResponseEntity<Customer>
-    createCustomer(
-            @RequestBody Customer customer
-    ) {
+    public ResponseEntity<Customer> createCustomer(@RequestBody Customer request) {
+        if (request == null) {
+            return ResponseEntity.badRequest().build();
+        }
 
-        return ResponseEntity.ok(
-                customerService.createCustomer(customer)
+        // Allowlist: chỉ lấy các trường được phép tạo.
+        // Bỏ qua ID do client gửi lên.
+        Customer safeCustomer = new Customer(
+                request.getName(),
+                request.getEmail(),
+                request.getPhone(),
+                request.getAddress()
         );
+
+        return ResponseEntity.ok(customerService.createCustomer(safeCustomer));
     }
 
-    // =========================
     // UPDATE
-    // =========================
-
     @PutMapping("/{id}")
-    public ResponseEntity<Customer>
-    updateCustomer(
+    public ResponseEntity<Customer> updateCustomer(
             @PathVariable Long id,
-            @RequestBody Customer customer
+            @RequestBody Customer request
     ) {
+        if (request == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        // Không truyền ID từ request vào service.
+        Customer safeCustomer = new Customer(
+                request.getName(),
+                request.getEmail(),
+                request.getPhone(),
+                request.getAddress()
+        );
 
         return ResponseEntity.ok(
-                customerService.updateCustomer(
-                        id,
-                        customer
-                )
+                customerService.updateCustomer(id, safeCustomer)
         );
     }
 
-    // =========================
     // DELETE
-    // =========================
-
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void>
-    deleteCustomer(
-            @PathVariable Long id
-    ) {
-
+    public ResponseEntity<Void> deleteCustomer(@PathVariable Long id) {
         customerService.deleteCustomer(id);
-
         return ResponseEntity.noContent().build();
     }
 }
