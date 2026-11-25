@@ -13,6 +13,8 @@ import com.example.backend.repository.CustomerRepository;
 import com.example.backend.repository.InvoiceRepository;
 import com.example.backend.repository.UserRepository;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -179,9 +181,10 @@ public class ContractService {
             );
         }
 
-        if (request.getMonthlyRent() <= 0) {
-            throw new RuntimeException(
-                    "Tiền thuê hàng tháng phải lớn hơn 0"
+        if (!Double.isFinite(request.getMonthlyRent())
+                || request.getMonthlyRent() <= 0) {
+            throw new IllegalArgumentException(
+                    "Tiền thuê hàng tháng phải là số hữu hạn và lớn hơn 0"
             );
         }
 
@@ -614,14 +617,22 @@ public class ContractService {
             );
         }
 
-        if (request.getMonthlyRent() <= 0) {
-            throw new RuntimeException(
-                    "Tiền thuê hàng tháng phải lớn hơn 0"
+        if (!Double.isFinite(request.getMonthlyRent())
+                || request.getMonthlyRent() <= 0) {
+            throw new IllegalArgumentException(
+                    "Tiền thuê hàng tháng phải là số hữu hạn và lớn hơn 0"
             );
         }
 
         // -----------------------------------------------------
-        // 3. TÌM CUSTOMER
+        // 3. KIỂM TRA VÀ CHUẨN HÓA TRẠNG THÁI TRƯỚC KHI TRUY VẤN
+        // -----------------------------------------------------
+
+        String newStatus =
+                normalizeContractStatus(request.getStatus());
+
+        // -----------------------------------------------------
+        // 4. TÌM CUSTOMER
         // -----------------------------------------------------
 
         Customer customer =
@@ -680,15 +691,6 @@ public class ContractService {
                             )
                             .orElse(null);
         }
-
-        // -----------------------------------------------------
-        // 7. NORMALIZE STATUS
-        // -----------------------------------------------------
-
-        String newStatus =
-                normalizeContractStatus(
-                        request.getStatus()
-                );
 
         // -----------------------------------------------------
         // 8. KIỂM TRA APARTMENT MỚI
@@ -999,7 +1001,10 @@ public class ContractService {
                 return "CANCELLED";
 
             default:
-                return normalized;
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Trạng thái hợp đồng không hợp lệ: " + status
+                );
         }
     }
 

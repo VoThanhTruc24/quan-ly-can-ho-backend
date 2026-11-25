@@ -383,6 +383,206 @@
         }
       },
       "response": []
+    },
+    {
+      "name": "TC11 – Kiểm tra Owner Profile không lộ password",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{owner_b_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/owner/me",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "owner",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "TC12 – Customer Mass Assignment",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"id\": 999999,\r\n  \"name\": \"Security Test Updated\",\r\n  \"email\": \"security@test.com\",\r\n  \"phone\": \"0911111111\",\r\n  \"address\": \"Updated Address\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/customers",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "customers"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "TC13 – Kiểm tra Owner A truy cập trái phép hợp đồng",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{owner_a_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/contracts/19",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "contracts",
+            "19"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "TC14 – Kiểm tra Owner A cập nhật hợp đồng trái phép",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{owner_a_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"customerName\": \"Security Test\",\r\n  \"apartmentName\": \"Apartment Test\",\r\n  \"startDate\": \"2026-12-01\",\r\n  \"endDate\": \"2027-12-01\",\r\n  \"monthlyRent\": 5000000,\r\n  \"status\": \"ACTIVE\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/contracts/19",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "contracts",
+            "19"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "TC15 – Owner A xóa hợp đồng trái phép",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{owner_a_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/contracts/19",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "contracts",
+            "19"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "TC16 – Kiểm tra hệ thống từ chối trạng thái hợp đồng không hợp lệ",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"customerName\": \"Nguyễn Ngọc Diệp\",\r\n  \"apartmentName\": \"A201\",\r\n  \"startDate\": \"2026-06-01\",\r\n  \"endDate\": \"2027-01-01\",\r\n  \"monthlyRent\": 12000000,\r\n  \"status\": \"HACKED\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/contracts/19",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "contracts",
+            "19"
+          ]
+        }
+      },
+      "response": []
     }
   ]
 }
